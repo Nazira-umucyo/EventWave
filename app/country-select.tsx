@@ -1,27 +1,34 @@
-import { useState } from 'react';
-import { router } from 'expo-router';
-import { FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { useState } from "react";
+import { FlatList, Pressable, StyleSheet, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { AppButton } from '@/components/AppButton';
-import { AppText } from '@/components/AppText';
-import { ScreenHeader } from '@/components/ScreenHeader';
-import { Colors, Radius, Spacing } from '@/constants/theme';
-import { countries } from '@/data/countries';
+import { AppButton } from "@/components/AppButton";
+import { AppText } from "@/components/AppText";
+import { ScreenHeader } from "@/components/ScreenHeader";
+import { Colors, Radius, Spacing } from "@/constants/theme";
+import { countries } from "@/data/countries";
 
 export default function CountrySelectScreen() {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(countries[0].code);
 
-  const filtered = countries.filter((c) => c.name.toLowerCase().includes(query.toLowerCase()));
+  const filtered = countries.filter((c) =>
+    c.name.toLowerCase().includes(query.toLowerCase()),
+  );
 
   return (
-    <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.root} edges={["top", "bottom"]}>
       <ScreenHeader title="Country Selection" />
 
       <View style={styles.searchWrap}>
-        <Ionicons name="search" size={18} color={Colors.textFaint} style={styles.searchIcon} />
+        <Ionicons
+          name="search"
+          size={18}
+          color={Colors.textFaint}
+          style={styles.searchIcon}
+        />
         <TextInput
           value={query}
           onChangeText={setQuery}
@@ -38,7 +45,10 @@ export default function CountrySelectScreen() {
         renderItem={({ item }) => {
           const active = item.code === selected;
           return (
-            <Pressable style={styles.row} onPress={() => setSelected(item.code)}>
+            <Pressable
+              style={styles.row}
+              onPress={() => setSelected(item.code)}
+            >
               <AppText variant="h5" style={styles.flag}>
                 {item.flag}
               </AppText>
@@ -54,7 +64,10 @@ export default function CountrySelectScreen() {
       />
 
       <View style={styles.footer}>
-        <AppButton label="Save" onPress={() => router.replace('/(auth)/sign-in')} />
+        <AppButton
+          label="Save"
+          onPress={() => router.replace("/(auth)/sign-in")}
+        />
       </View>
     </SafeAreaView>
   );
@@ -66,8 +79,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   searchWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.grey,
     borderRadius: Radius.md,
     marginHorizontal: Spacing.lg,
@@ -88,8 +101,8 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.xl,
   },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: Spacing.sm,
     gap: Spacing.md,
   },
@@ -105,8 +118,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1.5,
     borderColor: Colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   radioActive: {
     borderColor: Colors.primary,
