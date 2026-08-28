@@ -14,12 +14,13 @@ import { Colors, Spacing } from "@/constants/theme";
 import { categories } from "@/data/categories";
 import { events, featuredEvents } from "@/data/events";
 import { hasUnreadNotifications } from "@/data/notifications";
-import { currentUser } from "@/data/users";
+import { useAuthState } from "@/state/auth-store";
 
 export default function HomeScreen() {
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const user = useAuthState();
 
   const visibleEvents = useMemo(() => {
     return events.filter((event) => {
@@ -40,12 +41,16 @@ export default function HomeScreen() {
       >
         <View style={styles.header}>
           <Pressable style={styles.identity} onPress={() => setMenuOpen(true)}>
-            <Image source={currentUser.avatar} style={styles.avatar} />
+            {user.avatarUri ? (
+              <Image source={{ uri: user.avatarUri }} style={styles.avatar} />
+            ) : (
+              <Ionicons name="person-circle" size={44} color={Colors.textFaint} />
+            )}
             <View>
               <AppText variant="body3" color={Colors.textFaint}>
                 Hi Welcome Here 👋
               </AppText>
-              <AppText variant="h5">{currentUser.name}</AppText>
+              <AppText variant="h5">{user.fullName || "Guest"}</AppText>
             </View>
           </Pressable>
           <Pressable
