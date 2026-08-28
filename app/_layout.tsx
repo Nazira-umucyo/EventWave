@@ -50,7 +50,7 @@ export default function RootLayout() {
         <Stack.Screen name="help-faqs" />
         <Stack.Screen name="contact-us" />
         <Stack.Screen name="booking/[id]/tickets" />
-        <Stack.Screen name="booking/[id]/covid" />
+        <Stack.Screen name="booking/[id]/event-guidelines" />
         <Stack.Screen name="booking/[id]/payment" />
         <Stack.Screen name="booking/[id]/add-card" options={{ presentation: 'modal' }} />
         <Stack.Screen name="booking/[id]/scan-card" />

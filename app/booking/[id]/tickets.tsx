@@ -47,7 +47,7 @@ export default function BuyTicketScreen() {
   const handleContinue = () => {
     checkoutStore.start(event.id, tierId);
     checkoutStore.setSeats(seats);
-    router.push(`/booking/${event.id}/covid`);
+    router.push(`/booking/${event.id}/event-guidelines`);
   };
 
   return (

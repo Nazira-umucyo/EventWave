@@ -13,17 +13,19 @@ import { getEventById } from '@/data/events';
 import { checkoutStore } from '@/state/checkout-store';
 
 const RULES = [
-  'Enjoy your favorite dishe and a lovely your friend and family and have a great time. Food from local food trucks..',
-  'I have not traveled internationally in the last 14 days',
+  'Please arrive at least 30 minutes before the event starts to allow time for check-in.',
+  'Bring a valid ID that matches the name on your ticket.',
+  'Tickets are non-transferable and non-refundable once purchased.',
+  'Outside food and drinks are not permitted at the venue.',
 ];
 
-export default function CovidDeclarationScreen() {
+export default function EventGuidelinesScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const event = getEventById(id);
   const [confirmed, setConfirmed] = useState(false);
 
   const handleContinue = () => {
-    checkoutStore.confirmCovid();
+    checkoutStore.confirmGuidelines();
     router.push(`/booking/${id}/payment`);
   };
 
@@ -32,18 +34,18 @@ export default function CovidDeclarationScreen() {
       <ScreenHeader title="" />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.banner}>
-          <Ionicons name="shield-checkmark" size={40} color={Colors.white} />
+          <Ionicons name="document-text" size={40} color={Colors.white} />
           <AppText variant="h3" color={Colors.white} style={styles.bannerTitle}>
-            COVID PROTECTION
+            EVENT GUIDELINES
           </AppText>
         </View>
 
         <AppText variant="h2" style={styles.title}>
-          Stay safe, be safe
+          Before you continue
         </AppText>
 
         <AppText variant="h5" style={styles.declarationTitle}>
-          Covid-19 Self Health Declaration
+          Please review and accept
         </AppText>
 
         {RULES.map((rule, index) => (
@@ -65,7 +67,7 @@ export default function CovidDeclarationScreen() {
           <Checkbox
             checked={confirmed}
             onToggle={() => setConfirmed((prev) => !prev)}
-            label="I confirm that I am healty"
+            label="I have read and agree to these guidelines"
           />
         </View>
       </ScrollView>
@@ -83,7 +85,7 @@ const styles = StyleSheet.create({
   banner: {
     height: 140,
     borderRadius: Radius.lg,
-    backgroundColor: Colors.green,
+    backgroundColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.sm,

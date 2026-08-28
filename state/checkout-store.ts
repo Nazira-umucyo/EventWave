@@ -3,13 +3,13 @@ import type { EventTicketTier, PaymentMethodType, SavedCard } from '@/data/types
 
 /**
  * Carries state through the multi-screen booking flow:
- * Buy Ticket -> Covid Declaration -> Payment -> (Add Card) -> Ticket.
+ * Buy Ticket -> Event Guidelines -> Payment -> (Add Card) -> Ticket.
  */
 type CheckoutState = {
   eventId: string | null;
   tierId: EventTicketTier['id'] | null;
   seats: number;
-  covidConfirmed: boolean;
+  guidelinesConfirmed: boolean;
   paymentMethod: PaymentMethodType | null;
   voucherCode: string | null;
   voucherApplied: boolean;
@@ -20,7 +20,7 @@ const store = createStore<CheckoutState>({
   eventId: null,
   tierId: null,
   seats: 1,
-  covidConfirmed: false,
+  guidelinesConfirmed: false,
   paymentMethod: null,
   voucherCode: null,
   voucherApplied: false,
@@ -32,9 +32,9 @@ const store = createStore<CheckoutState>({
 export const checkoutStore = {
   ...store,
   start: (eventId: string, tierId: EventTicketTier['id']) =>
-    store.set((s) => ({ ...s, eventId, tierId, seats: 1, covidConfirmed: false, voucherApplied: false })),
+    store.set((s) => ({ ...s, eventId, tierId, seats: 1, guidelinesConfirmed: false, voucherApplied: false })),
   setSeats: (seats: number) => store.set((s) => ({ ...s, seats: Math.max(1, seats) })),
-  confirmCovid: () => store.set((s) => ({ ...s, covidConfirmed: true })),
+  confirmGuidelines: () => store.set((s) => ({ ...s, guidelinesConfirmed: true })),
   setPaymentMethod: (method: PaymentMethodType) => store.set((s) => ({ ...s, paymentMethod: method })),
   applyVoucher: (code: string) => store.set((s) => ({ ...s, voucherCode: code, voucherApplied: true })),
   removeVoucher: () => store.set((s) => ({ ...s, voucherCode: null, voucherApplied: false })),
@@ -46,7 +46,7 @@ export const checkoutStore = {
       eventId: null,
       tierId: null,
       seats: 1,
-      covidConfirmed: false,
+      guidelinesConfirmed: false,
       paymentMethod: null,
       voucherCode: null,
       voucherApplied: false,
