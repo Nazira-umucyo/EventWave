@@ -24,7 +24,7 @@ export default function SelectInterestScreen() {
   };
 
   const handleNext = () => {
-    authStore.completeInterests();
+    authStore.completeInterests(selected);
     router.replace('/(auth)/select-location');
   };
 

@@ -18,13 +18,26 @@ import { SocialAuthRow } from '@/components/SocialAuthRow';
 import { Colors, Spacing } from '@/constants/theme';
 import { authStore } from '@/state/auth-store';
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+
+  const validate = () => {
+    const next: typeof errors = {};
+    if (!email.trim()) next.email = 'Please enter your email';
+    else if (!EMAIL_REGEX.test(email.trim())) next.email = 'Please enter a valid email';
+    if (!password) next.password = 'Please enter your password';
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
 
   const handleSignIn = () => {
-    authStore.signIn();
+    if (!validate()) return;
+    authStore.signIn(email);
     const { hasSelectedInterests, hasSelectedLocation } = authStore.get();
     if (!hasSelectedInterests) router.replace('/(auth)/select-interest');
     else if (!hasSelectedLocation) router.replace('/(auth)/select-location');
@@ -43,21 +56,42 @@ export default function SignInScreen() {
           </AppText>
 
           <View style={styles.form}>
-            <AppTextInput
-              icon="mail-outline"
-              placeholder="Type your email"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-            />
-            <AppTextInput
-              icon="lock-closed-outline"
-              placeholder="Type your password"
-              value={password}
-              onChangeText={setPassword}
-              secureToggle
-              secureTextEntry
-            />
+            <View>
+              <AppTextInput
+                icon="mail-outline"
+                placeholder="Type your email"
+                value={email}
+                onChangeText={(t) => {
+                  setEmail(t);
+                  if (errors.email) setErrors((e) => ({ ...e, email: undefined }));
+                }}
+                keyboardType="email-address"
+              />
+              {errors.email && (
+                <AppText variant="body3" color={Colors.error} style={styles.errorText}>
+                  {errors.email}
+                </AppText>
+              )}
+            </View>
+
+            <View>
+              <AppTextInput
+                icon="lock-closed-outline"
+                placeholder="Type your password"
+                value={password}
+                onChangeText={(t) => {
+                  setPassword(t);
+                  if (errors.password) setErrors((e) => ({ ...e, password: undefined }));
+                }}
+                secureToggle
+                secureTextEntry
+              />
+              {errors.password && (
+                <AppText variant="body3" color={Colors.error} style={styles.errorText}>
+                  {errors.password}
+                </AppText>
+              )}
+            </View>
           </View>
 
           <View style={styles.optionsRow}>
@@ -108,6 +142,7 @@ const styles = StyleSheet.create({
   title: {},
   subtitle: { marginTop: Spacing.xs },
   form: { marginTop: Spacing.xl, gap: Spacing.md },
+  errorText: { marginTop: 4, marginLeft: 4 },
   optionsRow: {
     flexDirection: 'row',
     alignItems: 'center',

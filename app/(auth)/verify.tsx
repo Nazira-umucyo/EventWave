@@ -8,7 +8,6 @@ import { AppText } from '@/components/AppText';
 import { OTPInput } from '@/components/OTPInput';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Colors, Spacing } from '@/constants/theme';
-import { authStore } from '@/state/auth-store';
 
 const RESEND_SECONDS = 53;
 
@@ -29,7 +28,6 @@ export default function VerifyScreen() {
     if (flow === 'reset') {
       router.push('/(auth)/new-password');
     } else {
-      authStore.signUp();
       router.replace('/(auth)/select-interest');
     }
   };

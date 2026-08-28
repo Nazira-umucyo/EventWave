@@ -6,14 +6,13 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { AppText } from '@/components/AppText';
 import { CategoryPill } from '@/components/CategoryPill';
-import { Colors, Radius, Spacing } from '@/constants/theme';
+import { Colors, Spacing } from '@/constants/theme';
 import { categories } from '@/data/categories';
-import { currentUser } from '@/data/users';
-
-const INTERESTS = ['design', 'food', 'sports', 'music', 'art'];
+import { useAuthState } from '@/state/auth-store';
 
 export default function ProfileScreen() {
   const [aboutExpanded, setAboutExpanded] = useState(false);
+  const user = useAuthState();
 
   return (
     <SafeAreaView style={styles.root} edges={['top']}>
@@ -29,27 +28,29 @@ export default function ProfileScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <View style={styles.avatarWrap}>
-          <Image source={currentUser.avatar} style={styles.avatar} />
+          {user.avatarUri ? (
+            <Image source={{ uri: user.avatarUri }} style={styles.avatar} />
+          ) : (
+            <Ionicons name="person-circle" size={96} color={Colors.textFaint} />
+          )}
         </View>
         <AppText variant="h3" style={styles.name}>
-          {currentUser.name}
+          {user.fullName || 'Your Name'}
         </AppText>
-
-        <View style={styles.statsRow}>
-          <Stat label="Followers" value={currentUser.followers} />
-          <View style={styles.statDivider} />
-          <Stat label="Following" value={currentUser.following} />
-          <View style={styles.statDivider} />
-          <Stat label="Events" value={currentUser.eventsCount} />
-        </View>
 
         <View style={styles.section}>
           <AppText variant="h5">About Me</AppText>
-          <AppText variant="body1" color={Colors.textFaint} numberOfLines={aboutExpanded ? undefined : 3} style={styles.aboutText}>
-            {currentUser.about}{' '}
-            <AppText variant="button2" color={Colors.primary} onPress={() => setAboutExpanded((p) => !p)}>
-              {aboutExpanded ? 'Read Less' : 'Read More'}
-            </AppText>
+          <AppText
+            variant="body1"
+            color={Colors.textFaint}
+            numberOfLines={aboutExpanded ? undefined : 3}
+            style={styles.aboutText}>
+            {user.about || 'Add a short bio in Edit Profile.'}{' '}
+            {user.about ? (
+              <AppText variant="button2" color={Colors.primary} onPress={() => setAboutExpanded((p) => !p)}>
+                {aboutExpanded ? 'Read Less' : 'Read More'}
+              </AppText>
+            ) : null}
           </AppText>
         </View>
 
@@ -58,7 +59,12 @@ export default function ProfileScreen() {
             Interest
           </AppText>
           <View style={styles.interestRow}>
-            {INTERESTS.map((id) => {
+            {user.interests.length === 0 && (
+              <AppText variant="body2" color={Colors.textFaint}>
+                No interests selected yet.
+              </AppText>
+            )}
+            {user.interests.map((id) => {
               const category = categories.find((c) => c.id === id);
               if (!category) return null;
               return <CategoryPill key={id} label={category.label} icon={category.icon as any} active />;
@@ -67,17 +73,6 @@ export default function ProfileScreen() {
         </View>
       </ScrollView>
     </SafeAreaView>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: number }) {
-  return (
-    <View style={styles.stat}>
-      <AppText variant="h4">{value.toLocaleString()}</AppText>
-      <AppText variant="body3" color={Colors.textFaint}>
-        {label}
-      </AppText>
-    </View>
   );
 }
 
@@ -95,14 +90,6 @@ const styles = StyleSheet.create({
   avatarWrap: { marginTop: Spacing.md },
   avatar: { width: 96, height: 96, borderRadius: 48 },
   name: { marginTop: Spacing.md },
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: Spacing.lg,
-    gap: Spacing.xl,
-  },
-  stat: { alignItems: 'center' },
-  statDivider: { width: StyleSheet.hairlineWidth, height: 28, backgroundColor: Colors.border },
   section: { alignSelf: 'stretch', marginTop: Spacing.xl },
   aboutText: { marginTop: Spacing.sm, lineHeight: 20 },
   interestTitle: { marginBottom: Spacing.sm },
