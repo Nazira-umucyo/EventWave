@@ -7,12 +7,19 @@
  * screens that consume them.
  */
 
-export type CategoryId = 'design' | 'art' | 'sports' | 'music' | 'food' | 'others';
+export type CategoryId =
+  | "design"
+  | "art"
+  | "sports"
+  | "music"
+  | "food"
+  | "others";
 
 export type Category = {
-  id: CategoryId;
+  id: string;
   label: string;
-  icon: string; // Ionicons name
+  icon: string;
+  color: string;
 };
 
 export type EventUser = {
@@ -27,7 +34,7 @@ export type EventUser = {
 };
 
 export type EventTicketTier = {
-  id: 'vip' | 'economy';
+  id: "vip" | "economy";
   label: string;
   price: number;
   seatsAvailable: number;
@@ -56,12 +63,12 @@ export type EventItem = {
   longitude?: number;
 };
 
-export type BookingStatus = 'upcoming' | 'past' | 'booked';
+export type BookingStatus = "upcoming" | "past" | "booked";
 
 export type Booking = {
   id: string;
   eventId: string;
-  tierId: EventTicketTier['id'];
+  tierId: EventTicketTier["id"];
   seats: number;
   totalPrice: number;
   purchasedAt: string;
@@ -79,7 +86,7 @@ export type Review = {
 
 export type NotificationItem = {
   id: string;
-  type: 'follow' | 'invite' | 'comment' | 'like' | 'reminder';
+  type: "follow" | "invite" | "comment" | "like" | "reminder";
   fromUserId: string;
   message: string;
   timeAgo: string;
@@ -88,11 +95,11 @@ export type NotificationItem = {
   eventId?: string;
 };
 
-export type PaymentMethodType = 'apple-pay' | 'google-pay' | 'paypal' | 'card';
+export type PaymentMethodType = "apple-pay" | "google-pay" | "paypal" | "card";
 
 export type SavedCard = {
   id: string;
-  brand: 'visa' | 'mastercard';
+  brand: "visa" | "mastercard";
   holder: string;
   last4: string;
   expiry: string;
