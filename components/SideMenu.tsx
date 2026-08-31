@@ -5,8 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { AppText } from './AppText';
 import { Colors, Radius, Spacing } from '@/constants/theme';
-import { currentUser } from '@/data/users';
-import { authStore } from '@/state/auth-store';
+import { authStore, useAuthState } from '@/state/auth-store';
 
 type SideMenuProps = {
   visible: boolean;
@@ -27,6 +26,8 @@ const MENU_ITEMS: {
 ];
 
 export function SideMenu({ visible, onClose }: SideMenuProps) {
+  const user = useAuthState();
+
   const navigate = (action: () => void) => {
     onClose();
     setTimeout(action, 200);
@@ -43,14 +44,18 @@ export function SideMenu({ visible, onClose }: SideMenuProps) {
       <View style={styles.overlay}>
         <SafeAreaView style={styles.panel} edges={['top', 'bottom']}>
           <View style={styles.header}>
-            <Image source={currentUser.avatar} style={styles.avatar} />
+            {user.avatarUri ? (
+              <Image source={{ uri: user.avatarUri }} style={styles.avatar} />
+            ) : (
+              <Ionicons name="person-circle" size={48} color={Colors.textFaint} />
+            )}
             <Pressable onPress={onClose} hitSlop={12}>
               <Ionicons name="close" size={22} color={Colors.textPrimary} />
             </Pressable>
           </View>
-          <AppText variant="h4">{currentUser.name}</AppText>
+          <AppText variant="h4">{user.fullName || 'Guest'}</AppText>
           <AppText variant="body3" color={Colors.textFaint}>
-            rafiislamapon4@gmail.com
+            {user.email || 'No email on file'}
           </AppText>
 
           <View style={styles.menuList}>
