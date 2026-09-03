@@ -12,12 +12,32 @@ import { authStore } from '@/state/auth-store';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function firebaseErrorMessage(code: string) {
+  switch (code) {
+    case 'auth/email-already-in-use':
+      return 'An account with this email already exists.';
+    case 'auth/invalid-email':
+      return 'Please enter a valid email.';
+    case 'auth/weak-password':
+      return 'Password must be at least 6 characters.';
+    default:
+      return 'Something went wrong. Please try again.';
+  }
+}
+
 export default function SignUpScreen() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [errors, setErrors] = useState<{ fullName?: string; email?: string; password?: string; confirmPassword?: string }>({});
+  const [errors, setErrors] = useState<{
+    fullName?: string;
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+    form?: string;
+  }>({});
+  const [submitting, setSubmitting] = useState(false);
 
   const validate = () => {
     const next: typeof errors = {};
@@ -32,10 +52,17 @@ export default function SignUpScreen() {
     return Object.keys(next).length === 0;
   };
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     if (!validate()) return;
-    authStore.signUp({ fullName, email });
-    router.push({ pathname: '/(auth)/verify', params: { flow: 'sign-up' } });
+    setSubmitting(true);
+    try {
+      await authStore.signUp({ fullName, email, password });
+      router.replace('/(auth)/verify');
+    } catch (err: any) {
+      setErrors((e) => ({ ...e, form: firebaseErrorMessage(err?.code ?? '') }));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -120,9 +147,21 @@ export default function SignUpScreen() {
                 </AppText>
               )}
             </View>
+
+            {errors.form && (
+              <AppText variant="body3" color={Colors.error} style={styles.errorText}>
+                {errors.form}
+              </AppText>
+            )}
           </View>
 
-          <AppButton label="Sign Up" variant="dark" onPress={handleSignUp} style={styles.submitButton} />
+          <AppButton
+            label={submitting ? 'Signing up...' : 'Sign Up'}
+            variant="dark"
+            onPress={handleSignUp}
+            style={styles.submitButton}
+            disabled={submitting}
+          />
 
           <SocialAuthRow />
 

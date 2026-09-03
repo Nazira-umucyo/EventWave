@@ -1,34 +1,49 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
 import { AppButton } from '@/components/AppButton';
 import { AppText } from '@/components/AppText';
-import { OTPInput } from '@/components/OTPInput';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Colors, Spacing } from '@/constants/theme';
-
-const RESEND_SECONDS = 53;
+import { authStore, useAuthState } from '@/state/auth-store';
 
 export default function VerifyScreen() {
   const { flow } = useLocalSearchParams<{ flow?: string }>();
-  const [code, setCode] = useState<string[]>([]);
-  const [secondsLeft, setSecondsLeft] = useState(RESEND_SECONDS);
+  const user = useAuthState();
+  const [checking, setChecking] = useState(false);
+  const [resent, setResent] = useState(false);
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (secondsLeft <= 0) return;
-    const timer = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [secondsLeft]);
+  const handleCheckVerified = async () => {
+    setChecking(true);
+    setError('');
+    try {
+      const verified = await authStore.checkEmailVerified();
+      if (verified) {
+        if (flow === 'reset') {
+          router.push('/(auth)/new-password');
+        } else {
+          router.replace('/(auth)/select-interest');
+        }
+      } else {
+        setError('Not verified yet. Please tap the link in the email we sent you.');
+      }
+    } catch {
+      setError('Something went wrong checking your verification status.');
+    } finally {
+      setChecking(false);
+    }
+  };
 
-  const isComplete = code.filter(Boolean).length === 4;
-
-  const handleContinue = () => {
-    if (flow === 'reset') {
-      router.push('/(auth)/new-password');
-    } else {
-      router.replace('/(auth)/select-interest');
+  const handleResend = async () => {
+    try {
+      await authStore.resendVerificationEmail();
+      setResent(true);
+    } catch {
+      setError('Could not resend the email. Please try again in a moment.');
     }
   };
 
@@ -37,37 +52,54 @@ export default function VerifyScreen() {
       <ScreenHeader title="Verification" />
 
       <View style={styles.content}>
-        <AppText variant="body1" color={Colors.textFaint} style={styles.subtitle}>
-          We&apos;ve send you the verification code on{'\n'}
-          <AppText variant="h5">+1 6358 9248 5789</AppText>
+        <View style={styles.iconWrap}>
+          <Ionicons name="mail-open-outline" size={48} color={Colors.primary} />
+        </View>
+
+        <AppText variant="h4" style={styles.title}>
+          Check your email
         </AppText>
 
-        <OTPInput value={code} onChange={setCode} />
+        <AppText variant="body1" color={Colors.textFaint} style={styles.subtitle}>
+          We&apos;ve sent a verification link to{'\n'}
+          <AppText variant="h5">{user.email}</AppText>
+          {'\n'}Tap the link, then come back and press Continue.
+        </AppText>
+
+        {error ? (
+          <AppText variant="body3" color={Colors.error} style={styles.errorText}>
+            {error}
+          </AppText>
+        ) : null}
 
         <AppButton
-          label="Continue"
+          label={checking ? 'Checking...' : 'Continue'}
           variant="dark"
-          onPress={handleContinue}
-          disabled={!isComplete}
+          onPress={handleCheckVerified}
+          disabled={checking}
           style={styles.continueButton}
         />
 
         <View style={styles.resendRow}>
-          <AppText variant="body2" color={Colors.textFaint}>
-            Re-send code in{' '}
-          </AppText>
-          {secondsLeft > 0 ? (
-            <AppText variant="body2" color={Colors.primary}>
-              0:{String(secondsLeft).padStart(2, '0')}
+          {resent ? (
+            <AppText variant="body2" color={Colors.textFaint}>
+              Verification email resent.
             </AppText>
           ) : (
-            <Pressable onPress={() => setSecondsLeft(RESEND_SECONDS)}>
-              <AppText variant="body2" color={Colors.primary}>
-                Resend
+            <>
+              <AppText variant="body2" color={Colors.textFaint}>
+                Didn&apos;t get it?{' '}
               </AppText>
-            </Pressable>
+              <Pressable onPress={handleResend}>
+                <AppText variant="body2" color={Colors.primary}>
+                  Resend
+                </AppText>
+              </Pressable>
+            </>
           )}
         </View>
+
+        {checking && <ActivityIndicator style={styles.spinner} color={Colors.primary} />}
       </View>
     </SafeAreaView>
   );
@@ -75,8 +107,20 @@ export default function VerifyScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: Colors.background },
-  content: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.lg },
-  subtitle: { marginBottom: Spacing.xl },
-  continueButton: { marginTop: Spacing.xl },
+  content: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl, alignItems: 'center' },
+  iconWrap: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: '#FDEEE4',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.lg,
+  },
+  title: { textAlign: 'center' },
+  subtitle: { marginTop: Spacing.sm, textAlign: 'center', lineHeight: 20 },
+  errorText: { marginTop: Spacing.md, textAlign: 'center' },
+  continueButton: { marginTop: Spacing.xl, alignSelf: 'stretch' },
   resendRow: { flexDirection: 'row', justifyContent: 'center', marginTop: Spacing.lg },
+  spinner: { marginTop: Spacing.md },
 });

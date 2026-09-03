@@ -1,9 +1,12 @@
+import { useEffect, useState } from 'react';
 import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { ActivityIndicator, View } from 'react-native';
 import 'react-native-reanimated';
 
 import { Colors } from '@/constants/theme';
+import { initAuthListener, useAuthState } from '@/state/auth-store';
 
 export const unstable_settings = {
   anchor: 'index',
@@ -22,6 +25,24 @@ const navigationTheme = {
 };
 
 export default function RootLayout() {
+  const [listenerStarted, setListenerStarted] = useState(false);
+  const { isInitializing } = useAuthState();
+
+  useEffect(() => {
+    if (!listenerStarted) {
+      initAuthListener();
+      setListenerStarted(true);
+    }
+  }, [listenerStarted]);
+
+  if (isInitializing) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.background }}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    );
+  }
+
   return (
     <ThemeProvider value={navigationTheme}>
       <Stack

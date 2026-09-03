@@ -20,11 +20,27 @@ import { authStore } from '@/state/auth-store';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function firebaseErrorMessage(code: string) {
+  switch (code) {
+    case 'auth/invalid-credential':
+    case 'auth/wrong-password':
+    case 'auth/user-not-found':
+      return 'Incorrect email or password.';
+    case 'auth/invalid-email':
+      return 'Please enter a valid email.';
+    case 'auth/too-many-requests':
+      return 'Too many attempts. Please try again later.';
+    default:
+      return 'Something went wrong. Please try again.';
+  }
+}
+
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>({});
+  const [submitting, setSubmitting] = useState(false);
 
   const validate = () => {
     const next: typeof errors = {};
@@ -35,13 +51,20 @@ export default function SignInScreen() {
     return Object.keys(next).length === 0;
   };
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
     if (!validate()) return;
-    authStore.signIn(email);
-    const { hasSelectedInterests, hasSelectedLocation } = authStore.get();
-    if (!hasSelectedInterests) router.replace('/(auth)/select-interest');
-    else if (!hasSelectedLocation) router.replace('/(auth)/select-location');
-    else router.replace('/(tabs)');
+    setSubmitting(true);
+    try {
+      await authStore.signIn(email, password);
+      const { hasSelectedInterests, hasSelectedLocation } = authStore.get();
+      if (!hasSelectedInterests) router.replace('/(auth)/select-interest');
+      else if (!hasSelectedLocation) router.replace('/(auth)/select-location');
+      else router.replace('/(tabs)');
+    } catch (err: any) {
+      setErrors((e) => ({ ...e, form: firebaseErrorMessage(err?.code ?? '') }));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -92,6 +115,12 @@ export default function SignInScreen() {
                 </AppText>
               )}
             </View>
+
+            {errors.form && (
+              <AppText variant="body3" color={Colors.error} style={styles.errorText}>
+                {errors.form}
+              </AppText>
+            )}
           </View>
 
           <View style={styles.optionsRow}>
@@ -110,7 +139,13 @@ export default function SignInScreen() {
             </Pressable>
           </View>
 
-          <AppButton label="Sign In" variant="dark" onPress={handleSignIn} style={styles.submitButton} />
+          <AppButton
+            label={submitting ? 'Signing in...' : 'Sign In'}
+            variant="dark"
+            onPress={handleSignIn}
+            style={styles.submitButton}
+            disabled={submitting}
+          />
 
           <SocialAuthRow />
 

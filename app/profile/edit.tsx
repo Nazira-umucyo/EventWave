@@ -48,9 +48,9 @@ export default function EditProfileScreen() {
     }
   };
 
-  const handleSave = () => {
-    authStore.set((s) => ({ ...s, fullName, about, interests, avatarUri }));
-    router.back();
+  const handleSave = async () => {
+    await authStore.updateProfile({ fullName, about, interests, avatarUri });
+     router.back();
   };
 
   return (
